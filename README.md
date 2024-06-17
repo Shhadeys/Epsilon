@@ -2,13 +2,9 @@
 
 <div align="center">
     <a href="https://discord.com/invite/yPYyZ78qCB"><img alt="Discord" src="https://img.shields.io/discord/1252372651842863255?label=discord"></a>
-
 <a href="https://github.com/Shhadeys/Epsilon"><img alt="Github Repo stars" src="https://img.shields.io/github/stars/Shhadeys/Epsilon?label=github%20stars"></a>
-
 <a href="https://github.com/Shhadeys/Epsilon"><img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/Shhadeys/Epsilon?label=github%20forks"></a>
-
 <a href="https://opensource.org/license/mit"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-brightgreen"></a>
-
 </div>
 <h1 align="center">Epsilon</h1>
 <p align="center" style="opacity: 0.65;">Games & tools for bypassing internet restrictions</p>
