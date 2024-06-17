@@ -1,7 +1,7 @@
 <p align="center"><img src="https://github.com/Shhadeys/Epsilon/blob/main/imgs/Icon_256_White.png?raw=true" height="200"></p>
 
 <div align="center">
-    <a href="https://discord.com/invite/yPYyZ78qCB"><img alt="Discord" src="https://img.shields.io/discord/1252372651842863255?label=Discord-blue"></a>
+    <a href="https://discord.com/invite/yPYyZ78qCB"><img alt="Discord" src="https://img.shields.io/discord/1252372651842863255?label=Discord?color=blue"></a>
 <a href="https://github.com/Shhadeys/Epsilon"><img alt="Github Repo stars" src="https://img.shields.io/github/stars/Shhadeys/Epsilon?label=github%20stars"></a>
 <a href="https://github.com/Shhadeys/Epsilon"><img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/Shhadeys/Epsilon?label=github%20forks"></a>
 <a href="https://opensource.org/license/mit"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-brightgreen"></a>
