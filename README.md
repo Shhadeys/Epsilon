@@ -12,7 +12,7 @@
 
 Welcome to Epsilon, a feature-rich game and tool site created just for you! We have over 150 games, multiple internet restriction bypass tools, and more! Whether you're a gamer, a developer, or your average Joe, Epsilon provides a seamless and enjoyable environment.
 
-> Consider giving us a star! Especially if you forked this repository or you found some other use out of this repository.
+> Consider giving a star! Especially if you forked this repository or you found some other use out of this repository.
 
 ## Features
 
@@ -20,6 +20,9 @@ Welcome to Epsilon, a feature-rich game and tool site created just for you! We h
 -   Easy to use
 -   Customizable
 -   Proxy
+-   Evasions
+-   Tutorials
+-   School Resources
 -   And More...
 
 
