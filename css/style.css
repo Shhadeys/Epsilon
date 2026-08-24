@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Trispace:wght@100&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300&display=swap');
 
 :root {
     --bg: #202020;
@@ -12,14 +13,7 @@
     --font-color: #dcddde;
     --font-family: 'Assistant', sans-serif;
 
-    --displacement: -0.1rem;
-    --tremble: -10deg;
-    --trembleF: 5deg;
-
-    --iPos: 50%;
-    --bPos: -75%;
-    --fPos: -50%;
-
+    --switch-accent: #5ebd3e;
     --time: 250ms;
 
     /*not sure where these vars are used*/
@@ -65,6 +59,8 @@
 
 html {
     background: var(--bg);
+    height: 100%;
+    overflow: hidden;
 }
 
 body {
@@ -73,6 +69,8 @@ body {
     box-sizing: border-box;
     animation: fadein 1s;
     color: var(--font-color);
+    height: 100%;
+    overflow: hidden;
 }
 
 body.noscript {
@@ -94,35 +92,132 @@ body.noscript {
     z-index: 999;
 }
 
-#particles {
-    position: absolute;
-    z-index: 0;
-    background: var(--bg);
-    margin: 0;
+#particle-wrapper {
+    position: fixed;
     top: 0;
     left: 0;
-    height: 100vh;
     width: 100vw;
-    overflow: hidden;
-    filter: blur(2px);
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+}
+
+#particle-canvas {
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
 }
 
 #everything-else {
-    display: grid;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 3rem;
+    height: 100vh;
+    box-sizing: border-box;
 }
 
-.homepage,
-.games,
-.settings {
-    position: absolute;
+@keyframes navSlideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes tabActivePulse {
+    0%   { opacity: 1; }
+    50%  { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+.tab-nav {
+    position: fixed;
     top: 0;
     left: 0;
-    margin-top: 11rem;
-    width: 100vw;
+    right: 0;
+    z-index: 200;
     display: flex;
     justify-content: center;
-    align-items: center;
+    background: var(--block-color);
+    border-bottom: 1px solid var(--button-color);
+    animation: navSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.tab-btn {
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--font-color);
+    padding: 0.85rem 2.5rem;
+    font-size: 0.8rem;
+    font-family: var(--font-family);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s ease, background 0.2s ease;
+    opacity: 0.5;
+}
+
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    right: 50%;
+    height: 2px;
+    background: var(--font-color);
+    transition: left 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+    transition: left 0.45s ease;
+}
+
+.tab-btn:hover {
+    opacity: 1;
+    background: var(--hover-color);
+}
+
+.tab-btn:hover::before {
+    left: 100%;
+}
+
+.tab-btn:hover::after,
+.tab-btn.active::after {
+    left: 0;
+    right: 0;
+}
+
+.tab-btn.active {
+    opacity: 1;
+    border-bottom: none;
+}
+
+.tab-panel {
+    position: relative;
     z-index: 10;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding: 3.5rem 0 1rem;
 }
 
 .cloaklaunch {
@@ -138,66 +233,121 @@ body.noscript {
     cursor: pointer;
 }
 
-.games {
-    flex-direction: column;
-    top: 2.5%;
+
+#tab-settings {
+    justify-content: flex-start;
+    padding: 2rem 0 5rem;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .setting-bg {
-    width: 75%;
-    background-color: var(--games-color);
-    height: 70vh;
-    overflow-y: scroll;
-    text-align: center;
+    width: min(680px, 88%);
+    background: transparent;
+    height: auto;
+    overflow: visible;
+    text-align: left;
 }
 
 #title {
     z-index: 50;
     position: relative;
-    display: inline-block;
-    justify-self: center;
+    display: block;
     text-align: center;
-    width: fit-content;
-    height: fit-content;
-    margin-top: 2.5rem;
-    font-size: 6rem;
-    font-weight: 100;
-    font-family: 'Trispace', sans-serif;
-    letter-spacing: 5px;
+    width: 100%;
+    margin: 0 0 1.25rem;
+    font-size: 5.5rem;
+    font-weight: 300;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: 12px;
+    text-transform: uppercase;
     color: transparent;
     -webkit-background-clip: text;
     background-clip: text;
+    background-image: linear-gradient(135deg, #ffffff, #888888);
     pointer-events: none;
+}
+
+#gamesList::-webkit-scrollbar {
+    width: 10px;
+}
+
+.games-list-wrap {
+    width: 75%;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: 0 auto 1.5rem;
+    box-sizing: border-box;
+    border-radius: 14px;
+    background-color: rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
 }
 
 #gamesList {
     list-style: none;
-    padding: 0;
+    padding: 0.5rem;
     margin: 0;
     z-index: 10;
-    width: 75%;
-    height: 60vh;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
     font-family: var(--font-family);
     overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 #gamesList li {
-    padding: 1.4%;
-    transition: all 0.2s ease-in;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem 1.1rem;
+    border-radius: 10px;
     letter-spacing: 1px;
     background-color: var(--games-color);
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    transform: translateX(0) scale(1);
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+    animation: gameItemIn 0.35s ease backwards;
 }
 
 #gamesList li:hover,
-#gamesList li:focus,
+#gamesList li:focus {
+    background-color: var(--hover-color);
+    border-left-color: var(--switch-accent, #5ebd3e);
+    transform: translateX(4px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
 #gamesList .active {
     background-color: var(--hover-color);
+    border-left-color: var(--switch-accent, #5ebd3e);
+}
+
+@keyframes gameItemIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .star {
     cursor: pointer;
     color: #ccc;
-    float: right;
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
+}
+
+.star:hover {
+    transform: scale(1.25);
 }
 
 .filled {
@@ -207,15 +357,18 @@ body.noscript {
 .searchbar {
     display: flex;
     width: 75%;
+    box-sizing: border-box;
     justify-content: center;
+    gap: 4px;
     margin-bottom: 5px;
 }
 
 .randgame {
     cursor: pointer;
-    width: 15%;
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    width: 110px;
     border: none;
-    margin-left: 4px;
     font-size: 100%;
     font-family: var(--font-family);
     color: var(--font-color);
@@ -224,8 +377,10 @@ body.noscript {
 
 #search {
     all: unset;
-    margin-right: 4px;
-    width: 70%;
+    box-sizing: border-box;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
     padding: 1rem;
     font-family: var(--font-family);
     color: var(--font-color);
@@ -235,6 +390,7 @@ body.noscript {
 #sort,
 .slot-action {
     all: unset;
+    box-sizing: border-box;
     margin: 0;
     border: none;
     background-color: var(--block-color);
@@ -242,7 +398,11 @@ body.noscript {
     font-size: 1rem;
     font-family: var(--font-family);
     padding: 1rem;
-    width: 15%;
+    flex: 0 0 auto;
+    width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .keySlot {
@@ -273,7 +433,7 @@ logo img:hover {
     cursor: pointer;
 }
 
-img[alt='MonkeyGG2 Icon'] {
+img[alt='Epsilon Icon'] {
     filter: brightness(110%);
 }
 
@@ -304,9 +464,6 @@ img[alt='Proxy Icon'] {
     }
     #gamesList li {
         font-size: 0.95rem;
-    }
-    #gamesList {
-        height: 55vh;
     }
 }
 
@@ -372,15 +529,28 @@ svg {
 }
 
 #page-loader iframe {
-    width: 100%;
-    height: 100%;
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 1.25rem;
+    left: 1.25rem;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    width: auto;
+    height: auto;
     z-index: 999;
     margin: 0;
     padding: 0;
     border: 0;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+@media screen and (max-width: 700px) {
+    #page-loader iframe {
+        top: 0.5rem;
+        left: 0.5rem;
+        right: 0.5rem;
+        bottom: 0.5rem;
+    }
 }
 
 .switch {
@@ -388,276 +558,205 @@ svg {
     display: inline-block;
 }
 
-.switch__wrapper p {
-    display: inline-block;
-}
-
 .switch__wrapper {
-    text-align: center;
+    position: relative;
     margin: 5%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 4rem;
     height: 2rem;
-    border: 2px solid red;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 99rem;
-    transform-origin: left center;
-    animation: checked__wrapper var(--time)-100ms ease-in forwards;
-    mix-blend-mode: lighten;
-}
-
-.switch__wrapper::before,
-.switch__wrapper::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border: 2px solid #000;
-    border-radius: inherit;
-    transform-origin: inherit;
-    animation: inherit;
-    mix-blend-mode: inherit;
-}
-
-.switch__wrapper::before {
-    --tremble: -12deg;
-    --trembleF: -7deg;
-    border-color: lime;
-}
-
-.switch__wrapper::after {
-    --tremble: -8deg;
-    --trembleF: -4deg;
-    border-color: blue;
+    background-color: var(--button-color);
+    cursor: pointer;
+    transition: background-color var(--time) ease, border-color var(--time) ease;
 }
 
 .switch__toggle {
+    position: absolute;
+    top: 50%;
+    left: 0.25rem;
     width: 1.5rem;
     height: 1.5rem;
     border-radius: 99rem;
-    box-shadow: inset 0 0 0 2px #fff;
-    transform-origin: inherit;
-    animation: checked__toggle var(--time) ease-in forwards;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+    transform: translateY(-50%) translateX(0) scale(1);
+    transition: transform var(--time) cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 input:active + .switch__wrapper .switch__toggle {
-    width: 1.6rem;
+    transform: translateY(-50%) translateX(0) scale(1.1);
 }
 
 input:checked + .switch__wrapper {
-    transform-origin: right center;
-    animation-name: checked__wrapper--r;
-    background-color: var(--block-color);
+    background-color: var(--switch-accent);
+    border-color: var(--switch-accent);
 }
 
 input:checked + .switch__wrapper .switch__toggle {
-    background: #fff;
-    animation-name: checked__toggle--r;
+    transform: translateY(-50%) translateX(2rem) scale(1);
 }
 
-@keyframes checked__wrapper {
-    0%,
-    45%,
-    100% {
-        transform: rotateY(0deg);
-    }
-
-    48% {
-        transform: translateX(var(--displacement));
-        filter: blur(0);
-    }
-
-    55% {
-        transform: rotateZ(var(--tremble));
-        filter: blur(1px);
-    }
-
-    65% {
-        transform: rotateZ(var(--trembleF));
-    }
-}
-
-@keyframes checked__wrapper--r {
-    0%,
-    45%,
-    100% {
-        transform: rotateY(0deg);
-    }
-
-    48% {
-        transform: translateX(calc(-1 * var(--displacement)));
-        filter: blur(0);
-    }
-
-    55% {
-        transform: rotateZ(calc(-1 * var(--tremble)));
-        filter: blur(1px);
-    }
-
-    65% {
-        transform: rotateZ(calc(-1 * var(--trembleF)));
-    }
-}
-
-@keyframes checked__toggle {
-    0% {
-        background: #fff;
-        transform: translateX(var(--iPos)) scale(1.25, 1);
-    }
-
-    45% {
-        background: #fff;
-        transform: translateX(var(--bPos)) scale(1, 1);
-    }
-
-    50% {
-        background: transparent;
-        transform: translateX(var(--bPos)) scale(0.5, 1.1);
-    }
-
-    65% {
-        transform: translateX(var(--bPos)) scale(1, 1);
-    }
-
-    100% {
-        transform: translateX(var(--fPos));
-    }
-}
-
-@keyframes checked__toggle--r {
-    0% {
-        background: transparent;
-        transform: translateX(calc(-1 * var(--iPos))) scale(1.25, 1);
-    }
-
-    45% {
-        background: transparent;
-        transform: translateX(calc(-1 * var(--bPos))) scale(1, 1);
-    }
-
-    50% {
-        background: #fff;
-        transform: translateX(calc(-1 * var(--bPos))) scale(0.5, 1.1);
-    }
-
-    65% {
-        transform: translateX(calc(-1 * var(--bPos))) scale(1, 1);
-    }
-
-    100% {
-        transform: translateX(calc(-1 * var(--fPos)));
-    }
+input:checked:active + .switch__wrapper .switch__toggle {
+    transform: translateY(-50%) translateX(2rem) scale(1.1);
 }
 
 /* Dropdown styles */
 #presets {
-  border: 1px solid var(--bg);
-  border-radius: 3px;
-  padding: 10px;
-  width: 50%;
-  margin-bottom: 10px;
-  font-size: 16px;
-  outline: none;
-  background-color: var(--games-color);
-  color: var(--font-color);
-  cursor: pointer; 
-}
-
-#presets::after {
-  content: '\25BC'; 
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  color: var(--font-color);
+    flex: 1;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.875rem;
+    font-family: var(--font-family);
+    outline: none;
+    background: rgba(0,0,0,0.25);
+    color: var(--font-color);
+    cursor: pointer;
 }
 
 #presets option {
-  background-color: var(--bg);
-  color: var(--font-color);
-}
-
-#presets option:hover {
-  background-color: var(--hover-color);
-}
-
-#presets option:checked {
-  background-color: var(--scrollbar-color);
-}
-
-
-/*input*/
-.text-field {
-    border: 1px solid var(--bg);
-    border-radius: 3px;
-    padding: 10px;
-    width: 50%;
-    margin-bottom: 10px;
-    font-size: 16px;
-    outline: none;
-    background-color: var(--games-color);
+    background-color: var(--bg);
     color: var(--font-color);
 }
 
-/* Submit button styles */
+
+.text-field {
+    flex: 1;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.875rem;
+    font-family: var(--font-family);
+    outline: none;
+    background: rgba(0,0,0,0.25);
+    color: var(--font-color);
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.text-field:focus {
+    border-color: rgba(255,255,255,0.18);
+}
+
 .submit-button {
-    background-color: var(--button-color);
+    background: var(--button-color);
     color: var(--font-color);
     border: none;
-    border-radius: 3px;
-    padding: 10px 20px;
-    font-size: 16px;
+    border-radius: 6px;
+    padding: 0.55rem 1rem;
+    font-size: 0.875rem;
+    font-family: var(--font-family);
     cursor: pointer;
-    width: 20%;
+    white-space: nowrap;
+    transition: background 0.2s;
 }
 
-/* Hover effect for the button */
 .submit-button:hover,
 .save-button:hover {
-    background-color: var(--hover-color);
+    background: var(--hover-color);
 }
 
 .save-button {
-    background-color: var(--button-color);
+    flex: 1;
+    background: var(--button-color);
     color: var(--font-color);
-    border-radius: 12px;
-    border: solid transparent;
-    padding: 10px;
-    font-size: 16px;
+    border-radius: 6px;
+    border: none;
+    padding: 0.55rem 1rem;
+    font-size: 0.875rem;
+    font-family: var(--font-family);
     cursor: pointer;
-    width: 20%;
+    transition: background 0.2s;
 }
 
 .color-input {
-  border: 1px solid var(--bg);
-  border-radius: 3px;
-  padding: 5px; 
-  margin-bottom: 10px;
-  outline: none;
-  background-color: var(--games-color);
-  color: var(--font-color);
+    width: 2.5rem;
+    height: 1.8rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 4px;
+    padding: 2px;
+    outline: none;
+    background: rgba(0,0,0,0.25);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
 }
 
 .color-input:hover {
-  border-color: var(--hover-color);
+    border-color: rgba(255,255,255,0.2);
 }
 
-h4 {
-    font-family: 'Trispace', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 900;
+.setting-bg > h4 {
+    font-family: var(--font-family);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.4;
+    margin: 2rem 0 0.6rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 
-.setting h5 {
-    font-family: 'Trispace', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 1000;
-    margin: 0 0 1% 0;
+.setting-bg > h6 {
+    font-size: 0.72rem;
+    font-family: var(--font-family);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    opacity: 0.35;
+    margin: -0.25rem 0 0.75rem;
 }
 
 .setting {
-    margin: 5% 0;
+    background: var(--block-color);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 0.5rem 0;
+    border: 1px solid rgba(255,255,255,0.04);
+}
+
+.setting h5 {
+    font-family: var(--font-family);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin: 0 0 0.3rem;
+}
+
+.setting p {
+    font-size: 0.78rem;
+    opacity: 0.5;
+    margin: 0 0 0.75rem;
+    line-height: 1.55;
+}
+
+.input-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+}
+
+.button-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.color-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.color-grid label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    opacity: 0.75;
+    gap: 0.75rem;
+    cursor: pointer;
 }
 
 button.in-game-button {

@@ -1,9 +1,9 @@
-let currentMenu = $('.homepage');
+let currentMenu = $('#tab-games');
 
-$('.column button .card').on('click', function () {
-    let nextMenu = this.getAttribute('data');
+$('.tab-btn').on('click', function () {
+    const tab = this.getAttribute('data-tab');
 
-    if (nextMenu === 'proxy') {
+    if (tab === 'proxy') {
         if (!config['proxy']) {
             $('#disabled').showModal();
             return;
@@ -14,17 +14,18 @@ $('.column button .card').on('click', function () {
             $('#page-loader iframe')[0].focus();
         });
         currentMenu = $('#page-loader');
-        inGame = !preferences.background; // if background is disabled (false) then inGame is set to to true turning off the background
+        inGame = !preferences.background;
         return;
     }
 
-    currentMenu.fadeOut(300, () => {
-        $('.' + nextMenu).fadeIn(200);
+    $('.tab-btn').removeClass('active');
+    $(this).addClass('active');
+    currentMenu.fadeOut(200, () => {
+        $('#tab-' + tab).fadeIn(200);
     });
-    currentMenu = $('.' + nextMenu);
+    currentMenu = $('#tab-' + tab);
 });
 
-$('logo img').on('click', returnHome);
 $('#gameButton').on('click', returnHome);
 $('#refresh').on('click', refreshPage);
 
@@ -366,11 +367,12 @@ function dragElement(elmnt) {
 function returnHome() {
     currentMenu.fadeOut(300, () => {
         $('#everything-else').fadeIn(200);
-        $('.games').hide();
-        $('.homepage').fadeIn(200);
+        $('#tab-games').fadeIn(200);
+        $('.tab-btn').removeClass('active');
+        $('.tab-btn[data-tab="games"]').addClass('active');
     });
-    currentMenu = $('.homepage');
-    inGame = !preferences.background; // if background is disabled (false) then inGame is set to to true turning off the background
+    currentMenu = $('#tab-games');
+    inGame = !preferences.background;
 }
 
 /**
@@ -647,6 +649,7 @@ const defaultColorSettings = {
     'scrollbar-color': '#434343',
     'scroll-track-color': '#111',
     'font-color': '#dcddde',
+    'particle-color': '#888888',
 };
 
 const colorSettings = JSON.parse(localStorage.getItem('colorSettings')) || defaultColorSettings;
@@ -673,9 +676,20 @@ function saveColorChanges() {
         newColorSettings[input.id] = input.value;
     });
 
-    // Save to local storage
     localStorage.setItem('colorSettings', JSON.stringify(newColorSettings));
-    alert('Colors saved! Changes will take place upon reload');
+
+    // Apply CSS variables immediately
+    Object.entries(newColorSettings).forEach(([key, value]) => {
+        if (key !== 'particle-color') {
+            document.documentElement.style.setProperty(`--${key}`, value);
+        }
+    });
+
+    // Re-initialize particles and title gradient immediately
+    if (typeof initParticles === 'function') initParticles();
+    if (typeof changeTitleColor === 'function') changeTitleColor();
+
+    alert('Colors saved!');
 }
 
 // Restore defaults button event listener
@@ -701,10 +715,10 @@ function randomGame() {
 
 const preferencesDefaults = {
     cloak: true,
-    cloakUrl: 'https://classroom.google.com',
+    cloakUrl: 'https://www.instructure.com/',
     mask: true,
-    maskTitle: 'Home',
-    maskIconUrl: 'https://ssl.gstatic.com/classroom/ic_product_classroom_32.png',
+    maskTitle: 'Dashboard',
+    maskIconUrl: 'https://du11hjcvx0uqb.cloudfront.net/dist/images/favicon-e10d657a73.ico',
     background: true,
 };
 
@@ -726,11 +740,6 @@ maskIcon.value = preferences.maskIconUrl;
 backgroundCheckbox.checked = preferences.background;
 
 const presets = {
-    classroom: {
-        url: 'https://classroom.google.com/',
-        title: 'Home',
-        icon: 'https://ssl.gstatic.com/classroom/ic_product_classroom_32.png',
-    },
     drive: {
         url: 'https://drive.google.com/',
         title: 'My Drive - Google Drive',
@@ -738,7 +747,7 @@ const presets = {
     },
     mail: {
         url: 'https://mail.google.com/',
-        title: 'Inbox (12) - Google Mail',
+        title: 'Inbox (12) - Gmail',
         icon: 'https://www.gstatic.com/images/branding/product/2x/gmail_2020q4_512dp.png',
     },
     canvas: {
