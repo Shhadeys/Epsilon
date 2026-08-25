@@ -1045,19 +1045,22 @@ button.in-game-button {
     z-index: 9999;
     top: 61px;
     left: 0;
-    width: 75px;
-    height: 50px;
-    background: var(--hover-color);
-    border-radius: 0 290486px 290486px 0;
-    color: #000;
-    padding: 0 10px;
-    line-height: 50px;
-    min-height: 50px;
-    border: none;
-    border-bottom: 3px solid var(--font-color);
+    width: 78px;
+    height: 52px;
+    background: linear-gradient(135deg, var(--hover-color), var(--block-color));
+    border-radius: 0 999px 999px 0;
+    color: var(--font-color);
+    padding: 0 12px;
+    line-height: 52px;
+    min-height: 52px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: none;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     will-change: transform;
     animation: bounceY 2s 0.5s;
-    transition: transform 0.5s cubic-bezier(0.55, 0, 0.1, 1);
+    transition: transform 0.5s cubic-bezier(0.55, 0, 0.1, 1), box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1065,18 +1068,42 @@ button.in-game-button {
 
 button.in-game-button svg {
     pointer-events: none;
-    color: var(--font-color);
-    margin-right: 0.625rem;
     display: inline-block;
 }
 
-button.in-game-button img {
-    pointer-events: none;
-    width: 33px;
+button.in-game-button svg:not(.ingame-icon) {
+    color: var(--font-color);
+    opacity: 0.45;
+    width: 11px;
+    margin-right: 0.5rem;
+    transition: opacity 0.25s ease;
+}
+
+button.in-game-button .ingame-icon {
+    width: 26px;
+    height: 26px;
+    color: var(--font-color);
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+    transition: transform 0.25s ease;
+}
+
+button.in-game-button:hover {
+    background: linear-gradient(135deg, var(--hover-color), var(--switch-accent, #5ebd3e) 220%);
+    border-color: var(--switch-accent, #5ebd3e);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(94, 189, 62, 0.25);
+}
+
+button.in-game-button:hover .ingame-icon {
+    transform: scale(1.08);
+}
+
+button.in-game-button:hover svg:not(.ingame-icon) {
+    opacity: 0.8;
 }
 
 button.in-game-button:active {
-    background: #aaa;
+    background: var(--button-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 button.in-game-button[attr-active='true'] {
@@ -1098,18 +1125,20 @@ button.in-game-button:active {
     }
 }
 
-button.in-game-button[attr-snapped='true'] svg {
+button.in-game-button[attr-snapped='true'] svg:not(.ingame-icon) {
     display: none;
 }
 
-button.in-game-button[attr-snapped='true'] img {
+button.in-game-button[attr-snapped='true'] .ingame-icon {
     transform: translate(-5px);
 }
 
 #refresh {
     right: 0;
-    border-radius: 290486px 0 0 290486px;
+    border-radius: 999px 0 0 999px;
     left: auto;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: none;
 }
 
 #refresh:not(hover) {
@@ -1120,7 +1149,7 @@ button.in-game-button[attr-snapped='true'] img {
     transform: translateX(0px);
 }
 
-#refresh svg {
+#refresh svg:not(.ingame-icon) {
     margin-right: 0;
     margin-left: 0.625rem;
     rotate: 180deg;
