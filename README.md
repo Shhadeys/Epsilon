@@ -1,18 +1,18 @@
 <p align="center"><img src="https://github.com/Shhadeys/Epsilon/blob/main/imgs/Icon_256_White.png?raw=true" height="200"></p>
 
 <div align="center">
-    <a href="https://discord.gg/nYHMFc2N6T"><img alt="Discord" src="https://img.shields.io/discord/1252372651842863255?style=flat&logo=discord&label=Discord&labelColor=blue&color=blue"></a>
+    <a href=""><img alt="Discord" src="https://img.shields.io/discord/1252372651842863255?style=flat&logo=discord&label=Discord&labelColor=blue&color=blue"></a>
+    <small>ill set up discord later </small>
 <a href="https://github.com/Shhadeys/Epsilon"><img alt="Github Repo stars" src="https://img.shields.io/github/stars/Shhadeys/Epsilon?label=github%20stars"></a>
-<a href="https://github.com/Shhadeys/Epsilon"><img alt="GitHub Repo forks" src="https://img.shields.io/github/forks/Shhadeys/Epsilon?label=github%20forks"></a>
 <a href="https://opensource.org/license/mit"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-brightgreen"></a>
 </div>
 <h1 align="center">Epsilon</h1>
 <p align="center" style="opacity: 0.65;">Games & tools for bypassing internet restrictions</p>
 <br>
 
-Welcome to Epsilon, a feature-rich game and tool site created just for you! We have over 150 games, multiple internet restriction bypass tools, and more! Whether you're a gamer, a developer, or your average Joe, Epsilon provides a seamless and enjoyable environment.
+Welcome to Epsilon, a feature-rich game and tool site created for my school. Its very in dev, but it works.
 
-> Consider giving a star! Especially if you forked this repository or you found some other use out of this repository.
+if your not in my school, it can still be of use but yeah.
 
 ## Features
 
@@ -23,7 +23,7 @@ Welcome to Epsilon, a feature-rich game and tool site created just for you! We h
 -   Evasions
 -   Tutorials
 -   School Resources
--   And More...
+-   And More
 
 
 ## License
