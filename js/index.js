@@ -196,6 +196,82 @@ $('#sort').on('change', updateList);
 dragElement(document.getElementById('gameButton'));
 dragElement(document.getElementById('refresh'));
 
+/**
+ * Scales a loaded game's canvas to fill the iframe (letterboxed, aspect ratio preserved),
+ * so games render too small stretch/shrink to fit the current browser window size.
+ * Games that already handle their own responsive canvas sizing are left alone.
+ *
+ * @param {HTMLIFrameElement} iframeEl
+ * @return {void}
+ */
+function initGameScaler(iframeEl) {
+    function tryFit() {
+        let win, doc;
+        try {
+            win = iframeEl.contentWindow;
+            doc = iframeEl.contentDocument;
+            if (!doc || !win || !doc.body) return false;
+        } catch (e) {
+            return false; // cross-origin (e.g. proxy), nothing we can do
+        }
+
+        const canvases = Array.from(doc.querySelectorAll('canvas'));
+        if (!canvases.length) return false;
+
+        const canvas = canvases.reduce((a, b) => (a.width * a.height >= b.width * b.height ? a : b));
+        if (!canvas.width || !canvas.height) return false;
+
+        const applyFit = () => {
+            const vw = win.innerWidth;
+            const vh = win.innerHeight;
+            if (!vw || !vh) return;
+
+            const rect = canvas.getBoundingClientRect();
+            // game already fills (most of) the window on its own, don't fight it
+            if (rect.width >= vw * 0.9 && rect.height >= vh * 0.9) {
+                canvas.style.removeProperty('position');
+                canvas.style.removeProperty('left');
+                canvas.style.removeProperty('top');
+                canvas.style.removeProperty('width');
+                canvas.style.removeProperty('height');
+                return;
+            }
+
+            const cw = canvas.width;
+            const ch = canvas.height;
+            const scale = Math.min(vw / cw, vh / ch);
+            const w = Math.floor(cw * scale);
+            const h = Math.floor(ch * scale);
+
+            doc.documentElement.style.overflow = 'hidden';
+            doc.body.style.margin = '0';
+            doc.body.style.overflow = 'hidden';
+            if (!doc.body.style.background) doc.body.style.background = '#000';
+
+            canvas.style.position = 'absolute';
+            canvas.style.left = Math.floor((vw - w) / 2) + 'px';
+            canvas.style.top = Math.floor((vh - h) / 2) + 'px';
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
+        };
+
+        applyFit();
+        win.addEventListener('resize', applyFit);
+        return true;
+    }
+
+    // the canvas may not exist yet for games that create it after some async loading (e.g. Unity), so poll briefly
+    let attempts = 0;
+    const poll = setInterval(() => {
+        attempts++;
+        if (tryFit() || attempts > 40) clearInterval(poll); // ~20s max at 500ms
+    }, 500);
+}
+
+document.querySelector('#page-loader iframe').addEventListener('load', function () {
+    initGameScaler(this);
+});
+
 const sequences = [
     { keys: ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA', 'Enter'], action: () => alert('No easter egg here') },
     { keys: ['KeyL', 'KeyE', 'KeyT', 'Space', 'KeyI', 'KeyT', 'Space', 'KeyS', 'KeyN', 'KeyO', 'KeyW'], action: snow },

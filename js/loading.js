@@ -18,7 +18,7 @@ function changeLoadingTip() {
 }
 
 changeLoadingTip();
-$('#everything-else, #page-loader, #tab-settings, .cloaklaunch').hide();
+$('#everything-else, #page-loader, #tab-settings, #tab-tools, #tab-chat, .cloaklaunch').hide();
 
 let changeTip = setInterval(() => {
     changeLoadingTip();
@@ -38,7 +38,7 @@ fetch('./config.jsonc')
             gamesList.append(
                 `<li url="games/${games[game]['path']}" ${
                     games[game]['aliases'] ? 'aliases="' + games[game]['aliases'].join(',') + '"' : ''
-                }>${game} <span class="star">★</span> </li>`
+                }>${game} <span class="star">❤</span> </li>`
             );
         }
 

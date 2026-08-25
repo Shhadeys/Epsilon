@@ -23,8 +23,9 @@ function changeTitleColor() {
     const el = document.getElementById('title');
     if (!el) return;
     const colorSettings = JSON.parse(localStorage.getItem('colorSettings')) || {};
-    const particleColor = colorSettings['particle-color'] || '#888888';
-    el.style.backgroundImage = `linear-gradient(135deg, #ffffff, ${particleColor})`;
+    const particleColor = colorSettings['particle-color'] || '#5ebd3e';
+    // keep the first/last stop identical so the looping shift animation (see #title in style.css) tiles seamlessly
+    el.style.backgroundImage = `linear-gradient(100deg, ${particleColor}, #ffb900, #f78200, #e23838, #973999, #009cdf, ${particleColor})`;
 }
 
 window.addEventListener('load', () => {

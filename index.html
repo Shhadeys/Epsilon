@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8" />
     <title>Epsilon</title>
     <meta name="description" content="Cool site for stuff" />
     <meta name="keywords" content="games, gamez, unblocked, unblocked games, tunnel rush, run 3, run, 3, hacks, chrome dino unblocked, chrome dino, chrome dinosaur, dinosaur game, dinosaur, chrome hacks, chrome dino hacks, chrome dinosaur hacks, chrome dino game hack, unblocked game site, idle breakout, idle breakout hack, idle breakout save, idle breakout code, idle breakout save generator, idle breakout unblocked, 2048, 2048 unblocked, 2048 no ads, no ads, ads, 2048 high score, cookie clicker, cookie clicker unblocked, cookie clicker github, cookie clicker no ads, flappy bird, flappy bird no ads, flappy bird unblocked, flash games, flash, bloons, bloons tower defense, bloons td, bloons td 1, bloons td 2, bloons td 3, bloons td 4, bloons td 5, bloons td 6, online, duck life, duck life 1, duck life 2, ducklife 3, factory balls, learn to fly, learn to fly game, raft wars, the impossible quiz, this is the only level, impossible quiz, impossible quiz online, impossible quiz answers, impossible quiz question, imposible quiz, quiz, quiz answers, hextris, retrobowl, retrobowl unblocked, retrobowl online, rooftop snipers, rooftop snipers unblocked, slope, slope online, slope unblocked, slope unblocked site, slope unblocked no ads, slope unblocked google site, slope unblocked online, slope unblocked school, smart ball, tunnel rush, tunnel rush online, tunnel rush unblocked, tunnel rush unblocked site, tunnel rush unblocked no ads, tunnel rush unblocked google site, slope google site, tunnel rush google site, tunnel rush unblocked online, tunnel rush unblocked school" />
@@ -65,16 +66,18 @@
       </dialog>
       <div class="cloaklaunch">
         <h1>Press Anywhere to cloak</h1>
-        <h3>(If you want to stop seeing this enable popups)</h3>
+        <h3>Hide this site from history. (Enable popups to disable this)</h3>
       </div>
       <nav class="tab-nav">
         <button class="tab-btn active" data-tab="games">Games</button>
+        <button class="tab-btn" data-tab="tools">Tools</button>
+        <button class="tab-btn" data-tab="chat">Chat</button>
         <button class="tab-btn" data-tab="settings">Settings</button>
         <button class="tab-btn" data-tab="proxy">Proxy</button>
       </nav>
       <div class="tab-panel" id="tab-games">
         <div class="hero">
-          <h1 id="title">Epsilon</h1>
+          <h1 id="title" data-text="Epsilon">Epsilon</h1>
           <div class="searchbar">
             <input type="text" id="search" placeholder="Search games..." />
             <select id="sort">
@@ -87,6 +90,85 @@
         <div class="games-list-wrap">
           <ul id="gamesList"></ul>
         </div>
+      </div>
+      <div class="tab-panel" id="tab-tools">
+        <div class="setting-bg tools-bg">
+          <h4>School Tools</h4>
+          <h6>Quick access to class related items</h6>
+          <div class="tools-grid">
+            <a class="tool-card" href="https://hs.hpisd.org/academics/canvas" target="_blank" rel="noopener noreferrer">
+              <h5>Canvas</h5>
+              <p>School canvas login.</p>
+            </a>
+            <a class="tool-card" href="https://sheets.google.com" target="_blank" rel="noopener noreferrer">
+              <h5>Google Sheets</h5>
+              <p>Spreadsheets and quick math.</p>
+            </a>
+            <a class="tool-card" href="https://slides.google.com" target="_blank" rel="noopener noreferrer">
+              <h5>Google Slides</h5>
+              <p>Build a presentation.</p>
+            </a>
+            <a class="tool-card" href="https://drive.google.com" target="_blank" rel="noopener noreferrer">
+              <h5>Google Drive</h5>
+              <p>Access your files.</p>
+            </a>
+            <a class="tool-card" href="https://translate.google.com" target="_blank" rel="noopener noreferrer">
+              <h5>Google Translate</h5>
+              <p>Translate text.</p>
+            </a>
+            <a class="tool-card" href="https://docs.google.com" target="_blank" rel="noopener noreferrer">
+              <h5>Google Docs</h5>
+              <p>Write and edit documents.</p>
+            </a>
+			<a class="tool-card" href="https://ti84calc.com/ti84calc" target="_blank" rel="noopener noreferrer">
+              <h5>TI-84</h5>
+              <p>Online TI-84 calculator</p>
+            </a>
+            <a class="tool-card" href="https://www.desmos.com/calculator" target="_blank" rel="noopener noreferrer">
+              <h5>Desmos Calculator</h5>
+              <p>Graphing calculator.</p>
+            </a>
+            <a class="tool-card" href="https://www.desmos.com/scientific" target="_blank" rel="noopener noreferrer">
+              <h5>Desmos Scientific</h5>
+              <p>Scientific calculator.</p>
+            </a>
+            <a class="tool-card" href="https://www.wolframalpha.com" target="_blank" rel="noopener noreferrer">
+              <h5>WolframAlpha</h5>
+              <p>Computational answer engine.</p>
+            </a>
+            <a class="tool-card" href="https://www.merriam-webster.com" target="_blank" rel="noopener noreferrer">
+              <h5>Dictionary</h5>
+              <p>Look up a word or definition.</p>
+            </a>
+            <a class="tool-card" href="https://quizlet.com" target="_blank" rel="noopener noreferrer">
+              <h5>Quizlet</h5>
+              <p>Flashcards and study sets.</p>
+            </a>
+			<a class="tool-card" href="https://www.canva.com/" target="_blank" rel="noopener noreferrer">
+              <h5>Canva</h5>
+              <p>Alternate presentation creator.</p>
+            </a>
+			<a class="tool-card" href="https://hpisd.nutrislice.com" target="_blank" rel="noopener noreferrer">
+              <h5>Nutrislice</h5>
+              <p>School breakfast and lunch menu.</p>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="tab-panel" id="tab-chat">
+        <div class="setting-bg chat-header">
+          <h4>Chat</h4>
+          <h6>Public live chat. Unmoderated and not saved, be smart about what you share. UNSECURE!!!! BE CAREFUL</h6>
+          <div class="chat-status" id="chatStatus">Connecting&hellip;</div>
+        </div>
+        <div class="chat-window-wrap">
+          <div class="chat-messages" id="chatMessages"></div>
+        </div>
+        <form class="chat-input-row" id="chatForm">
+          <input type="text" id="chatNameInput" class="text-field chat-name-field" placeholder="Name" maxlength="24" autocomplete="off" />
+          <input type="text" id="chatTextInput" class="text-field chat-text-field" placeholder="Message" maxlength="500" autocomplete="off" />
+          <button type="submit" class="submit-button" id="chatSendBtn" disabled>Send</button>
+        </form>
       </div>
       <div class="tab-panel" id="tab-settings">
         <div class="setting-bg">
@@ -275,5 +357,7 @@
     <script src="js/bg.js" defer></script>
     <script src="js/index.js" defer></script>
     <script src="js/cryptojs.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js" defer></script>
+    <script src="js/chat.js" defer></script>
   </body>
 </html>
