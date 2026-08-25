@@ -796,6 +796,7 @@ const preferencesDefaults = {
     maskTitle: 'Dashboard',
     maskIconUrl: 'https://du11hjcvx0uqb.cloudfront.net/dist/images/favicon-e10d657a73.ico',
     background: true,
+    fpsCounter: true,
 };
 
 if (localStorage.getItem('preferences') == null) {
@@ -804,6 +805,7 @@ if (localStorage.getItem('preferences') == null) {
 const preferences = JSON.parse(localStorage.getItem('preferences'));
 const cloakCheckbox = document.getElementById('cloakCheckboxInput');
 const backgroundCheckbox = document.getElementById('backgroundCheckboxInput');
+const fpsCheckbox = document.getElementById('fpsCheckboxInput');
 const cloakUrl = document.getElementById('cloakUrlInput');
 const maskCheckbox = document.getElementById('maskCheckboxInput');
 const maskTitle = document.getElementById('maskTitleInput');
@@ -814,6 +816,7 @@ maskCheckbox.checked = preferences.mask;
 maskTitle.value = preferences.maskTitle;
 maskIcon.value = preferences.maskIconUrl;
 backgroundCheckbox.checked = preferences.background;
+fpsCheckbox.checked = preferences.fpsCounter;
 
 const presets = {
     drive: {
@@ -874,6 +877,11 @@ backgroundCheckbox.addEventListener('change', function () {
     preferences.background = backgroundCheckbox.checked;
     localStorage.setItem('preferences', JSON.stringify(preferences));
     inGame = !preferences.background;
+});
+
+fpsCheckbox.addEventListener('change', function () {
+    preferences.fpsCounter = fpsCheckbox.checked;
+    localStorage.setItem('preferences', JSON.stringify(preferences));
 });
 
 /* if it is wanted to save on input change wather than submission

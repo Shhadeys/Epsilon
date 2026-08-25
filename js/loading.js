@@ -140,6 +140,12 @@ jQuery.fn.extend({
 });
 
 (function () {
+    let storedPreferences = {};
+    try {
+        storedPreferences = JSON.parse(localStorage.getItem('preferences')) || {};
+    } catch (e) {}
+    if (storedPreferences.fpsCounter === false) return;
+
     let previousTime = Date.now();
     let frames = 0;
     let refreshRate = 1000;
