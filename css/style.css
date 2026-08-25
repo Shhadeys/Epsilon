@@ -240,7 +240,8 @@ body.noscript {
 
 
 #tab-settings,
-#tab-tools {
+#tab-tools,
+#tab-about {
     justify-content: flex-start;
     padding: 2rem 0 5rem;
     box-sizing: border-box;
@@ -257,6 +258,93 @@ body.noscript {
 
 .tools-bg {
     width: min(920px, 92%);
+}
+
+.about-bg {
+    width: min(1080px, 92%);
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.about-side {
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 860px) {
+    .about-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.changelog-content {
+    max-height: 320px;
+    overflow-y: auto;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    opacity: 0.85;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
+}
+
+.changelog-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.changelog-content::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 6px 0;
+}
+
+.changelog-content::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.16);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+    border-radius: 999px;
+}
+
+.changelog-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.32);
+}
+
+.changelog-content p {
+    margin: 0 0 0.6rem;
+    opacity: 1;
+}
+
+.changelog-content ul {
+    margin: 0 0 0.6rem;
+    padding-left: 1.1rem;
+}
+
+.changelog-content li {
+    margin: 0 0 0.3rem;
+}
+
+.changelog-version {
+    font-family: var(--font-family);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin: 0.9rem 0 0.4rem;
+    opacity: 0.9;
+}
+
+.changelog-version:first-child {
+    margin-top: 0;
+}
+
+.feedback-textarea {
+    width: 100%;
+    min-height: 90px;
+    resize: vertical;
+    font-family: var(--font-family);
+    margin-bottom: 0.75rem;
 }
 
 .tools-grid {

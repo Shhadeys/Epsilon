@@ -18,7 +18,7 @@ function changeLoadingTip() {
 }
 
 changeLoadingTip();
-$('#everything-else, #page-loader, #tab-settings, #tab-tools, #tab-chat, .cloaklaunch').hide();
+$('#everything-else, #page-loader, #tab-settings, #tab-tools, #tab-chat, #tab-about, .cloaklaunch').hide();
 
 let changeTip = setInterval(() => {
     changeLoadingTip();

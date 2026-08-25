@@ -72,9 +72,50 @@
         <button class="tab-btn active" data-tab="games">Games</button>
         <button class="tab-btn" data-tab="tools">Tools</button>
         <button class="tab-btn" data-tab="chat">Chat</button>
-        <button class="tab-btn" data-tab="settings">Settings</button>
         <button class="tab-btn" data-tab="proxy">Proxy</button>
+		<button class="tab-btn" data-tab="settings">Settings</button>
+		<button class="tab-btn" data-tab="about">About</button>
       </nav>
+      <div class="tab-panel" id="tab-about" style="display: none;">
+        <div class="setting-bg about-bg">
+          <h4>About Epsilon</h4>
+          <h6>Games &amp; tools for bypassing internet restrictions</h6>
+          <div class="about-grid">
+            <div class="about-main">
+              <div class="setting">
+                <p>Hello! This is Epsilon. A site used to bypass restrictions put in place by the powers that be. Has games, tools, proxies, and more! Very in dev, but its coming along :) </p>
+              </div>
+              <div class="setting changelog-card">
+                <h5>Changelog</h5>
+                <p>Pulled live from <a href="https://github.com/Shhadeys/Epsilon/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG.md</a> on GitHub.</p>
+                <div id="changelogContent" class="changelog-content">Loading changelog&hellip;</div>
+              </div>
+            </div>
+            <div class="about-side">
+              <div class="setting">
+                <h5>About Me</h5>
+                <p id="aboutMeText">Fellow student developing with love. </p>
+              </div>
+              <div class="setting">
+                <h5>Suggest a Game or Feature</h5>
+                <p>Got an idea? Let me know what you'd like to see added.</p>
+                <textarea id="suggestionInput" class="text-field feedback-textarea" placeholder="I'd love to see..." maxlength="1000"></textarea>
+                <div class="button-row">
+                  <button class="submit-button" id="suggestionSubmit">Submit Suggestion</button>
+                </div>
+              </div>
+              <div class="setting">
+                <h5>Report a Bug</h5>
+                <p>Something broken? Describe what happened and how to reproduce it.</p>
+                <textarea id="bugInput" class="text-field feedback-textarea" placeholder="Steps to reproduce..." maxlength="1000"></textarea>
+                <div class="button-row">
+                  <button class="submit-button" id="bugSubmit">Submit Bug Report</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="tab-panel" id="tab-games">
         <div class="hero">
           <h1 id="title" data-text="Epsilon">Epsilon</h1>
@@ -374,6 +415,7 @@
     <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/index.min.js" defer></script>
     <script src="js/bg.js" defer></script>
     <script src="js/index.js" defer></script>
+    <script src="js/about.js" defer></script>
     <script src="js/cryptojs.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js" defer></script>
     <script src="js/chat.js" defer></script>
