@@ -625,10 +625,6 @@ body.noscript {
     box-sizing: border-box;
 }
 
-.chat-name-field {
-    flex: 0 0 120px;
-}
-
 .chat-text-field {
     flex: 1 1 auto;
 }
@@ -636,6 +632,229 @@ body.noscript {
 .submit-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.chat-auth-panel {
+    display: flex;
+    justify-content: center;
+}
+
+.chat-auth-card {
+    width: min(360px, 100%);
+}
+
+.chat-subtabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.chat-subtab-btn {
+    background: var(--button-color);
+    color: var(--font-color);
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.78rem;
+    font-family: var(--font-family);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.chat-subtab-btn:hover {
+    background: var(--hover-color);
+}
+
+.chat-subtab-btn.active {
+    opacity: 1;
+    background: var(--hover-color);
+}
+
+.chat-auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.chat-auth-error {
+    font-size: 0.75rem;
+    color: #e23838;
+    min-height: 1em;
+    margin: 0;
+}
+
+.chat-main {
+    width: 88%;
+    max-width: 1000px;
+    margin: 0.5rem auto 1.5rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    gap: 1rem;
+    box-sizing: border-box;
+}
+
+.chat-sidebar {
+    width: 220px;
+    flex: 0 0 220px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.chat-account-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.chat-my-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    opacity: 0.85;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-logout-btn {
+    background: transparent;
+    color: var(--font-color);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+    font-family: var(--font-family);
+    cursor: pointer;
+    opacity: 0.6;
+    flex-shrink: 0;
+}
+
+.chat-logout-btn:hover {
+    opacity: 1;
+}
+
+.chat-view-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+    margin-bottom: 0.75rem;
+}
+
+.chat-sidebar-form {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.chat-sidebar-form .text-field {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.78rem;
+}
+
+.chat-sidebar-form .submit-button {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.78rem;
+}
+
+.chat-room-info {
+    font-size: 0.72rem;
+    opacity: 0.7;
+    margin: 0;
+    word-break: break-word;
+}
+
+.chat-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.chat-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    background: var(--block-color);
+    border-radius: 8px;
+    padding: 0;
+    overflow: hidden;
+    border: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.chat-list-item.active {
+    background: var(--hover-color);
+}
+
+.chat-list button.chat-list-item {
+    padding: 0.5rem 0.7rem;
+    text-align: left;
+    font-family: var(--font-family);
+    color: var(--font-color);
+    font-size: 0.78rem;
+    cursor: pointer;
+    justify-content: flex-start;
+}
+
+.chat-room-name-btn,
+.chat-room-code-btn {
+    background: transparent;
+    border: none;
+    color: var(--font-color);
+    font-family: var(--font-family);
+    cursor: pointer;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.78rem;
+}
+
+.chat-room-name-btn {
+    flex: 1 1 auto;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-room-code-btn {
+    opacity: 0.5;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+}
+
+.chat-room-code-btn:hover {
+    opacity: 1;
+}
+
+.chat-thread {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-thread-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    opacity: 0.6;
+    margin-bottom: 0.4rem;
+}
+
+.chat-thread .chat-window-wrap,
+.chat-thread .chat-input-row {
+    width: 100%;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .games-list-wrap {
@@ -921,8 +1140,15 @@ svg {
         width: 92%;
     }
 
-    .chat-name-field {
-        flex: 0 0 88px;
+    .chat-main {
+        width: 94%;
+        flex-direction: column;
+    }
+
+    .chat-sidebar {
+        width: 100%;
+        flex: 0 0 auto;
+        max-height: 45vh;
     }
 }
 

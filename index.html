@@ -199,17 +199,78 @@
       <div class="tab-panel" id="tab-chat">
         <div class="setting-bg chat-header">
           <h4>Chat</h4>
-          <h6>Public live chat. Unmoderated and not saved, be smart about what you share. UNSECURE!!!! BE CAREFUL</h6>
+          <h6>Sign in to chat. Public wall for everyone, plus private DMs and invite-only rooms &mdash; messages are saved and only visible to the people they're addressed to.</h6>
           <div class="chat-status" id="chatStatus">Connecting&hellip;</div>
         </div>
-        <div class="chat-window-wrap">
-          <div class="chat-messages" id="chatMessages"></div>
+
+        <div class="setting-bg chat-auth-panel" id="chatAuthPanel" style="display: none;">
+          <div class="setting chat-auth-card">
+            <div class="chat-subtabs">
+              <button type="button" class="chat-subtab-btn active" data-authtab="login">Log In</button>
+              <button type="button" class="chat-subtab-btn" data-authtab="signup">Sign Up</button>
+            </div>
+            <form id="chatLoginForm" class="chat-auth-form">
+              <input type="text" id="loginUsername" class="text-field" placeholder="Username" autocomplete="username" maxlength="20" />
+              <input type="password" id="loginPassword" class="text-field" placeholder="Password" autocomplete="current-password" />
+              <button type="submit" class="submit-button">Log In</button>
+              <p class="chat-auth-error" id="loginError"></p>
+            </form>
+            <form id="chatSignupForm" class="chat-auth-form" style="display: none;">
+              <input type="text" id="signupUsername" class="text-field" placeholder="Choose a username (3-20 chars)" autocomplete="username" maxlength="20" />
+              <input type="password" id="signupPassword" class="text-field" placeholder="Password (6+ chars)" autocomplete="new-password" />
+              <button type="submit" class="submit-button">Create Account</button>
+              <p class="chat-auth-error" id="signupError"></p>
+            </form>
+          </div>
         </div>
-        <form class="chat-input-row" id="chatForm">
-          <input type="text" id="chatNameInput" class="text-field chat-name-field" placeholder="Name" maxlength="24" autocomplete="off" />
-          <input type="text" id="chatTextInput" class="text-field chat-text-field" placeholder="Message" maxlength="500" autocomplete="off" />
-          <button type="submit" class="submit-button" id="chatSendBtn" disabled>Send</button>
-        </form>
+
+        <div class="chat-main" id="chatMain" style="display: none;">
+          <div class="chat-sidebar">
+            <div class="chat-account-row">
+              <span class="chat-my-name" id="chatMyName"></span>
+              <button type="button" class="chat-logout-btn" id="chatLogoutBtn">Log Out</button>
+            </div>
+            <div class="chat-subtabs">
+              <button type="button" class="chat-subtab-btn active" data-view="public">Public Wall</button>
+              <button type="button" class="chat-subtab-btn" data-view="dms">Direct Messages</button>
+              <button type="button" class="chat-subtab-btn" data-view="rooms">Rooms</button>
+            </div>
+
+            <div class="chat-view-panel" id="chatPanel-dms" style="display: none;">
+              <form class="chat-sidebar-form" id="chatDmSearchForm">
+                <input type="text" id="chatDmSearchInput" class="text-field" placeholder="Start DM with username" maxlength="20" autocomplete="off" />
+                <button type="submit" class="submit-button">Go</button>
+              </form>
+              <p class="chat-auth-error" id="chatDmSearchError"></p>
+              <div class="chat-list" id="chatDmList"></div>
+            </div>
+
+            <div class="chat-view-panel" id="chatPanel-rooms" style="display: none;">
+              <form class="chat-sidebar-form" id="chatRoomCreateForm">
+                <input type="text" id="chatRoomNameInput" class="text-field" placeholder="New room name" maxlength="40" autocomplete="off" />
+                <button type="submit" class="submit-button">Create</button>
+              </form>
+              <form class="chat-sidebar-form" id="chatRoomJoinForm">
+                <input type="text" id="chatRoomCodeInput" class="text-field" placeholder="Join with code" maxlength="16" autocomplete="off" />
+                <button type="submit" class="submit-button">Join</button>
+              </form>
+              <p class="chat-auth-error" id="chatRoomError"></p>
+              <p class="chat-room-info" id="chatRoomInfo"></p>
+              <div class="chat-list" id="chatRoomList"></div>
+            </div>
+          </div>
+
+          <div class="chat-thread">
+            <div class="chat-thread-header" id="chatThreadHeader">Public Wall</div>
+            <div class="chat-window-wrap">
+              <div class="chat-messages" id="chatMessages"></div>
+            </div>
+            <form class="chat-input-row" id="chatForm">
+              <input type="text" id="chatTextInput" class="text-field chat-text-field" placeholder="Message" maxlength="1000" autocomplete="off" />
+              <button type="submit" class="submit-button" id="chatSendBtn" disabled>Send</button>
+            </form>
+          </div>
+        </div>
       </div>
       <div class="tab-panel" id="tab-settings">
         <div class="setting-bg">
@@ -417,7 +478,10 @@
     <script src="js/index.js" defer></script>
     <script src="js/about.js" defer></script>
     <script src="js/cryptojs.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+    <script src="js/firebase-config.js" defer></script>
     <script src="js/chat.js" defer></script>
   </body>
 </html>
