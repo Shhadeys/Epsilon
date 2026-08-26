@@ -1,9 +1,16 @@
 # Changelog
 
-8/25/26
+8/24/26
 
 -	Most site functions done
 
-## Unreleased
+8/25/26
 
--   Added an About tab with a live changelog, an about-me blurb, and suggestion/bug report boxes.
+-  Chat finished (dms, rooms, much more secure, stored)
+-  Game suggestions and bug reports fixed
+  
+
+## Upcoming
+
+-   Proxy will be fixed i swear
+-   youtube and music stuff soon
