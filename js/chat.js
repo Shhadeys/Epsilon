@@ -6,6 +6,7 @@
     const USERNAME_RE = /^[a-z0-9_]{3,20}$/i;
     const PSEUDO_EMAIL_DOMAIN = 'epsilon.local';
     const ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const NOTIF_PREF_KEY = 'chatNotificationsEnabled';
 
     let app = null;
     let auth = null;
@@ -22,6 +23,13 @@
         unsubMessages: null,
         unsubDmList: null,
         unsubRoomList: null,
+        // While true, onAuthStateChanged ignores sign-ins -- set during handleSignup so its
+        // own profile-creation writes can't race the listener's "does a profile exist yet?"
+        // check (that race was signing brand-new accounts right back out, intermittently).
+        suppressAuthHandler: false,
+        lastDmDocs: [],
+        lastRoomDocs: [],
+        notificationsEnabled: true,
     };
 
     function $(id) {
@@ -67,6 +75,66 @@
         }
     }
 
+    // ---------- Notifications ----------
+
+    function loadNotifPref() {
+        const raw = localStorage.getItem(NOTIF_PREF_KEY);
+        return raw === null ? true : raw === '1';
+    }
+
+    function saveNotifPref(enabled) {
+        localStorage.setItem(NOTIF_PREF_KEY, enabled ? '1' : '0');
+    }
+
+    function tsMillis(ts) {
+        return ts && typeof ts.toMillis === 'function' ? ts.toMillis() : 0;
+    }
+
+    function lastReadKey(threadKey) {
+        return 'chatLastRead:' + state.uid + ':' + threadKey;
+    }
+
+    function getLastRead(threadKey) {
+        const raw = localStorage.getItem(lastReadKey(threadKey));
+        return raw ? parseInt(raw, 10) : 0;
+    }
+
+    function markRead(threadKey) {
+        localStorage.setItem(lastReadKey(threadKey), String(Date.now()));
+    }
+
+    function isThreadUnread(threadKey, updatedAtMillis, isActive, lastSenderUid) {
+        if (!state.notificationsEnabled || isActive || !updatedAtMillis) return false;
+        // Never flag a thread as unread over your own message -- relying on timestamps
+        // alone is a race (a server-assigned updatedAt can land after your own local
+        // read-marker if you send and immediately switch away), so check the sender too.
+        if (lastSenderUid && lastSenderUid === state.uid) return false;
+        return updatedAtMillis > getLastRead(threadKey);
+    }
+
+    function isChatTabActive() {
+        const btn = document.querySelector('.tab-btn[data-tab="chat"]');
+        return !!btn && btn.classList.contains('active');
+    }
+
+    function anyThreadUnread() {
+        const dmHit = state.lastDmDocs.some((d) => {
+            const data = d.data();
+            return isThreadUnread('dm:' + d.id, tsMillis(data.updatedAt), state.view === 'dm' && state.activeId === d.id, data.lastSenderUid);
+        });
+        if (dmHit) return true;
+        return state.lastRoomDocs.some((d) => {
+            const data = d.data();
+            return isThreadUnread('room:' + d.id, tsMillis(data.updatedAt), state.view === 'room' && state.activeId === d.id, data.lastSenderUid);
+        });
+    }
+
+    function updateGlobalNotifBadge() {
+        const badge = $('chatGlobalNotif');
+        if (!badge) return;
+        badge.style.display = state.notificationsEnabled && anyThreadUnread() && !isChatTabActive() ? '' : 'none';
+    }
+
     // ---------- Auth ----------
 
     function switchAuthTab(tab) {
@@ -75,6 +143,19 @@
         });
         $('chatLoginForm').style.display = tab === 'login' ? '' : 'none';
         $('chatSignupForm').style.display = tab === 'signup' ? '' : 'none';
+    }
+
+    function setFormBusy(form, busy, busyText) {
+        const btn = form.querySelector('button[type="submit"]');
+        if (!btn) return;
+        if (busy) {
+            if (btn.dataset.idleText === undefined) btn.dataset.idleText = btn.textContent;
+            btn.textContent = busyText;
+            btn.disabled = true;
+        } else {
+            btn.textContent = btn.dataset.idleText || btn.textContent;
+            btn.disabled = false;
+        }
     }
 
     async function handleSignup(e) {
@@ -96,6 +177,8 @@
 
         const usernameLower = usernameRaw.toLowerCase();
         let cred = null;
+        state.suppressAuthHandler = true;
+        setFormBusy(e.target, true, 'Creating account…');
         try {
             cred = await auth.createUserWithEmailAndPassword(pseudoEmail(usernameLower), password);
 
@@ -118,8 +201,15 @@
                 usernameLower,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             });
+
+            // Profile now exists -- safe to enter directly instead of waiting on
+            // onAuthStateChanged, which we've been suppressing this whole time.
+            await enterAsUser(cred.user.uid);
         } catch (err) {
             errorEl.textContent = authErrorMessage(err);
+        } finally {
+            state.suppressAuthHandler = false;
+            setFormBusy(e.target, false);
         }
     }
 
@@ -132,10 +222,13 @@
         const password = $('loginPassword').value || '';
         if (!usernameRaw || !password) return;
 
+        setFormBusy(e.target, true, 'Logging in…');
         try {
             await auth.signInWithEmailAndPassword(pseudoEmail(usernameRaw.toLowerCase()), password);
         } catch (err) {
             errorEl.textContent = authErrorMessage(err);
+        } finally {
+            setFormBusy(e.target, false);
         }
     }
 
@@ -154,13 +247,24 @@
         if (messages) messages.innerHTML = '';
     }
 
-    function switchSidebarView(view) {
-        document.querySelectorAll('.chat-subtab-btn[data-view]').forEach((btn) => {
-            btn.classList.toggle('active', btn.dataset.view === view);
-        });
-        $('chatPanel-dms').style.display = view === 'dms' ? '' : 'none';
-        $('chatPanel-rooms').style.display = view === 'rooms' ? '' : 'none';
-        if (view === 'public') openPublic();
+    // "Public Wall" reflects the actually-open thread. "New DM"/"Manage Rooms" are just
+    // panel toggles (their own .expanded state) -- they never claim to be the open thread,
+    // which is what made it unclear what you were looking at after opening a DM/room.
+    function setPublicActive(isActive) {
+        const btn = document.querySelector('.chat-subtab-btn[data-view="public"]');
+        if (btn) btn.classList.toggle('active', isActive);
+    }
+
+    function setPanelExpanded(view, expanded) {
+        const btn = document.querySelector('.chat-subtab-btn[data-view="' + view + '"]');
+        const panel = $('chatPanel-' + view);
+        if (btn) btn.classList.toggle('expanded', expanded);
+        if (panel) panel.style.display = expanded ? '' : 'none';
+    }
+
+    function togglePanelExpanded(view) {
+        const panel = $('chatPanel-' + view);
+        setPanelExpanded(view, !panel || panel.style.display === 'none');
     }
 
     function openPublic() {
@@ -169,6 +273,9 @@
         state.activeId = null;
         state.activeLabel = 'Public Wall';
         $('chatThreadHeader').textContent = 'Public Wall';
+        setPublicActive(true);
+        setPanelExpanded('dms', false);
+        setPanelExpanded('rooms', false);
         subscribeMessages(db.collection('publicMessages').orderBy('ts', 'asc').limitToLast(100));
         renderDmList(state.lastDmDocs || []);
         renderRoomList(state.lastRoomDocs || []);
@@ -179,7 +286,8 @@
         state.view = 'dm';
         state.activeId = id;
         state.activeLabel = 'DM with ' + otherName;
-        $('chatThreadHeader').textContent = 'DM with ' + otherName;
+        $('chatThreadHeader').textContent = 'Direct Message · ' + otherName;
+        setPublicActive(false);
         subscribeMessages(db.collection('dms').doc(id).collection('messages').orderBy('ts', 'asc').limitToLast(100));
         renderDmList(state.lastDmDocs || []);
         renderRoomList(state.lastRoomDocs || []);
@@ -190,7 +298,8 @@
         state.view = 'room';
         state.activeId = id;
         state.activeLabel = 'Room: ' + name;
-        $('chatThreadHeader').textContent = 'Room: ' + name;
+        $('chatThreadHeader').textContent = 'Room · ' + name;
+        setPublicActive(false);
         subscribeMessages(db.collection('rooms').doc(id).collection('messages').orderBy('ts', 'asc').limitToLast(100));
         renderDmList(state.lastDmDocs || []);
         renderRoomList(state.lastRoomDocs || []);
@@ -240,6 +349,16 @@
             });
         });
         container.scrollTop = container.scrollHeight;
+
+        // Viewing this thread counts as reading it -- refresh the read marker and
+        // let the sidebar/global badges re-evaluate now that it's up to date.
+        if (state.view === 'dm' && state.activeId) {
+            markRead('dm:' + state.activeId);
+            renderDmList(state.lastDmDocs);
+        } else if (state.view === 'room' && state.activeId) {
+            markRead('room:' + state.activeId);
+            renderRoomList(state.lastRoomDocs);
+        }
     }
 
     function subscribeMessages(query) {
@@ -270,9 +389,14 @@
                 await db.collection('dms').doc(state.activeId).collection('messages').add(payload);
                 await db.collection('dms').doc(state.activeId).update({
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastSenderUid: state.uid,
                 });
             } else if (state.view === 'room' && state.activeId) {
                 await db.collection('rooms').doc(state.activeId).collection('messages').add(payload);
+                await db.collection('rooms').doc(state.activeId).update({
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastSenderUid: state.uid,
+                });
             }
         } catch (err) {
             console.error('Failed to send message', err);
@@ -284,30 +408,50 @@
     function renderDmList(docs) {
         state.lastDmDocs = docs;
         const el = $('chatDmList');
-        if (!el) return;
-        el.innerHTML = '';
-        docs.forEach((d) => {
-            const data = d.data();
-            if (!data || !Array.isArray(data.members)) return;
-            const otherUid = data.members.find((m) => m !== state.uid);
-            const otherName = (data.memberNames && data.memberNames[otherUid]) || 'Unknown';
+        if (el) {
+            el.innerHTML = '';
+            docs.forEach((d) => {
+                const data = d.data();
+                if (!data || !Array.isArray(data.members)) return;
+                const otherUid = data.members.find((m) => m !== state.uid);
+                const otherName = (data.memberNames && data.memberNames[otherUid]) || 'Unknown';
+                const isActive = state.view === 'dm' && state.activeId === d.id;
 
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'chat-list-item' + (state.view === 'dm' && state.activeId === d.id ? ' active' : '');
-            btn.textContent = otherName;
-            btn.addEventListener('click', () => openDm(d.id, otherName));
-            el.appendChild(btn);
-        });
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'chat-list-item' + (isActive ? ' active' : '');
+
+                const label = document.createElement('span');
+                label.className = 'chat-list-item-label';
+                label.textContent = otherName;
+                btn.appendChild(label);
+
+                if (isThreadUnread('dm:' + d.id, tsMillis(data.updatedAt), isActive, data.lastSenderUid)) {
+                    const dot = document.createElement('span');
+                    dot.className = 'chat-unread-dot';
+                    btn.appendChild(dot);
+                }
+
+                btn.addEventListener('click', () => openDm(d.id, otherName));
+                el.appendChild(btn);
+            });
+        }
+        updateGlobalNotifBadge();
     }
 
     function subscribeDmList() {
+        // No orderBy here on purpose: combining array-contains with orderBy on a
+        // different field needs a Firestore composite index, which isn't set up by
+        // default -- that missing index was silently failing this whole query. Sort
+        // client-side instead, same as the room list already does.
         state.unsubDmList = db
             .collection('dms')
             .where('members', 'array-contains', state.uid)
-            .orderBy('updatedAt', 'desc')
             .onSnapshot(
-                (snap) => renderDmList(snap.docs),
+                (snap) => {
+                    const docs = snap.docs.slice().sort((a, b) => tsMillis(b.data().updatedAt) - tsMillis(a.data().updatedAt));
+                    renderDmList(docs);
+                },
                 (err) => console.error('DM list subscription failed', err)
             );
     }
@@ -345,7 +489,7 @@
                     { merge: true }
                 );
 
-            switchSidebarView('dms');
+            setPanelExpanded('dms', false);
             openDm(id, otherName);
         } catch (err) {
             errorEl.textContent = 'Could not start that DM.';
@@ -374,37 +518,46 @@
     function renderRoomList(docs) {
         state.lastRoomDocs = docs;
         const el = $('chatRoomList');
-        if (!el) return;
-        el.innerHTML = '';
-        docs.forEach((d) => {
-            const data = d.data();
-            if (!data) return;
+        if (el) {
+            el.innerHTML = '';
+            docs.forEach((d) => {
+                const data = d.data();
+                if (!data) return;
+                const isActive = state.view === 'room' && state.activeId === d.id;
 
-            const item = document.createElement('div');
-            item.className = 'chat-list-item' + (state.view === 'room' && state.activeId === d.id ? ' active' : '');
+                const item = document.createElement('div');
+                item.className = 'chat-list-item' + (isActive ? ' active' : '');
 
-            const nameBtn = document.createElement('button');
-            nameBtn.type = 'button';
-            nameBtn.className = 'chat-room-name-btn';
-            nameBtn.textContent = data.name || 'Room';
-            nameBtn.addEventListener('click', () => openRoom(d.id, data.name || 'Room'));
-            item.appendChild(nameBtn);
+                const nameBtn = document.createElement('button');
+                nameBtn.type = 'button';
+                nameBtn.className = 'chat-room-name-btn';
+                nameBtn.textContent = data.name || 'Room';
+                nameBtn.addEventListener('click', () => openRoom(d.id, data.name || 'Room'));
+                item.appendChild(nameBtn);
 
-            if (data.code) {
-                const codeBtn = document.createElement('button');
-                codeBtn.type = 'button';
-                codeBtn.className = 'chat-room-code-btn';
-                codeBtn.textContent = data.code;
-                codeBtn.title = 'Copy invite code';
-                codeBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    copyText(data.code);
-                });
-                item.appendChild(codeBtn);
-            }
+                if (isThreadUnread('room:' + d.id, tsMillis(data.updatedAt), isActive, data.lastSenderUid)) {
+                    const dot = document.createElement('span');
+                    dot.className = 'chat-unread-dot';
+                    item.appendChild(dot);
+                }
 
-            el.appendChild(item);
-        });
+                if (data.code) {
+                    const codeBtn = document.createElement('button');
+                    codeBtn.type = 'button';
+                    codeBtn.className = 'chat-room-code-btn';
+                    codeBtn.textContent = data.code;
+                    codeBtn.title = 'Copy invite code';
+                    codeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        copyText(data.code);
+                    });
+                    item.appendChild(codeBtn);
+                }
+
+                el.appendChild(item);
+            });
+        }
+        updateGlobalNotifBadge();
     }
 
     function subscribeRoomList() {
@@ -431,11 +584,12 @@
                 ownerUid: state.uid,
                 members: [state.uid],
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             });
             await db.collection('roomCodes').doc(code).set({ roomId: ref.id });
 
             $('chatRoomInfo').textContent = 'Room created! Share this code to invite people: ' + code;
-            switchSidebarView('rooms');
+            setPanelExpanded('rooms', false);
             openRoom(ref.id, name);
         } catch (err) {
             errorEl.textContent = 'Could not create room.';
@@ -471,7 +625,7 @@
                 errorEl.textContent = 'Room not found.';
                 return;
             }
-            switchSidebarView('rooms');
+            setPanelExpanded('rooms', false);
             openRoom(roomId, roomDoc.data().name || 'Room');
         } catch (err) {
             errorEl.textContent = 'Could not join that room.';
@@ -508,36 +662,47 @@
         teardownActiveThread();
     }
 
-    async function onAuthStateChanged(user) {
-        if (!user) {
-            state.uid = null;
-            state.username = null;
-            state.usernameLower = null;
-            teardownUserSubscriptions();
-            showAuthUi();
-            return;
-        }
-
+    async function enterAsUser(uid) {
         try {
-            const profileDoc = await db.collection('users').doc(user.uid).get();
+            const profileDoc = await db.collection('users').doc(uid).get();
             if (!profileDoc.exists) {
                 // Auth account exists but the profile write failed/never happened; sign back out.
                 await auth.signOut();
                 return;
             }
             const profile = profileDoc.data();
-            state.uid = user.uid;
+            state.uid = uid;
             state.username = profile.username;
             state.usernameLower = profile.usernameLower;
 
             showChatUi();
             subscribeDmList();
             subscribeRoomList();
-            switchSidebarView('public');
+            openPublic();
         } catch (err) {
             console.error('Failed to load chat profile', err);
             setStatus('Chat error', 'error');
         }
+    }
+
+    function onAuthStateChanged(user) {
+        // A signup in progress drives its own transition via enterAsUser() once it has
+        // actually finished writing the profile -- ignore the interim sign-in event here.
+        if (state.suppressAuthHandler) return;
+
+        if (!user) {
+            state.uid = null;
+            state.username = null;
+            state.usernameLower = null;
+            state.lastDmDocs = [];
+            state.lastRoomDocs = [];
+            teardownUserSubscriptions();
+            showAuthUi();
+            updateGlobalNotifBadge();
+            return;
+        }
+
+        enterAsUser(user.uid);
     }
 
     // ---------- Init ----------
@@ -554,12 +719,63 @@
         return true;
     }
 
+    function wirePasswordToggles() {
+        document.querySelectorAll('.chat-password-toggle').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const input = $(btn.dataset.target);
+                if (!input) return;
+                const nowShowing = input.type === 'password';
+                input.type = nowShowing ? 'text' : 'password';
+                btn.textContent = nowShowing ? 'Hide' : 'Show';
+                btn.setAttribute('aria-label', nowShowing ? 'Hide password' : 'Show password');
+            });
+        });
+    }
+
+    function wireNotifications() {
+        state.notificationsEnabled = loadNotifPref();
+
+        const toggle = $('chatNotifToggle');
+        if (toggle) {
+            toggle.checked = state.notificationsEnabled;
+            toggle.addEventListener('change', () => {
+                state.notificationsEnabled = toggle.checked;
+                saveNotifPref(toggle.checked);
+                renderDmList(state.lastDmDocs);
+                renderRoomList(state.lastRoomDocs);
+            });
+        }
+
+        const globalBadge = $('chatGlobalNotif');
+        if (globalBadge) {
+            globalBadge.addEventListener('click', () => {
+                const chatTabBtn = document.querySelector('.tab-btn[data-tab="chat"]');
+                if (chatTabBtn) chatTabBtn.click();
+            });
+        }
+
+        // Re-check the global badge whenever the active top-level tab changes (it should
+        // only ever show while the user isn't already looking at the chat tab).
+        const tabNav = document.querySelector('.tab-nav');
+        if (tabNav) {
+            tabNav.addEventListener('click', (e) => {
+                if (e.target.matches('.tab-btn')) updateGlobalNotifBadge();
+            });
+        }
+    }
+
     function wireUpUi() {
+        wirePasswordToggles();
+        wireNotifications();
+
         document.querySelectorAll('.chat-subtab-btn[data-authtab]').forEach((btn) => {
             btn.addEventListener('click', () => switchAuthTab(btn.dataset.authtab));
         });
         document.querySelectorAll('.chat-subtab-btn[data-view]').forEach((btn) => {
-            btn.addEventListener('click', () => switchSidebarView(btn.dataset.view));
+            btn.addEventListener('click', () => {
+                if (btn.dataset.view === 'public') openPublic();
+                else togglePanelExpanded(btn.dataset.view);
+            });
         });
 
         $('chatLoginForm').addEventListener('submit', handleLogin);

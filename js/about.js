@@ -1,6 +1,3 @@
-const CHANGELOG_RAW_URL = 'https://raw.githubusercontent.com/Shhadeys/Epsilon/main/CHANGELOG.md';
-const REPO_ISSUES_URL = 'https://github.com/Shhadeys/Epsilon/issues/new';
-
 /**
  * Escapes HTML-sensitive characters in a string.
  *
@@ -44,42 +41,62 @@ function renderChangelog(markdown) {
     return html || '<p>Changelog is empty.</p>';
 }
 
-fetch(CHANGELOG_RAW_URL)
-    .then((res) => {
-        if (!res.ok) throw new Error('Changelog not found');
-        return res.text();
-    })
-    .then((markdown) => {
-        document.getElementById('changelogContent').innerHTML = renderChangelog(markdown);
-    })
-    .catch(() => {
-        document.getElementById('changelogContent').innerHTML =
-            '<p>Could not load the changelog right now. <a href="https://github.com/Shhadeys/Epsilon/commits/main" target="_blank" rel="noopener noreferrer">View recent commits on GitHub</a> instead.</p>';
-    });
+// CHANGELOG_MARKDOWN comes from js/changelog-data.js, which is regenerated from
+// CHANGELOG.md by scripts/build-changelog.js (wired up as a pre-commit hook) --
+// baked in at commit time instead of fetched from GitHub on every page load.
+if (typeof window.CHANGELOG_MARKDOWN === 'string') {
+    document.getElementById('changelogContent').innerHTML = renderChangelog(window.CHANGELOG_MARKDOWN);
+} else {
+    document.getElementById('changelogContent').innerHTML =
+        '<p>Changelog data is missing. Run <code>node scripts/build-changelog.js</code> and reload.</p>';
+}
 
 /**
- * Opens a prefilled GitHub issue for a suggestion or bug report.
+ * Submits a suggestion or bug report to Firestore instead of opening a GitHub issue.
+ * Uses the same Firebase app js/chat.js sets up; works without being signed into chat.
  *
  * @param {string} inputId
- * @param {string} label
- * @param {string} titlePrefix
+ * @param {string} type
+ * @param {string} statusId
  * @return {void}
  */
-function submitFeedback(inputId, label, titlePrefix) {
+function submitFeedback(inputId, type, statusId) {
     const input = document.getElementById(inputId);
+    const statusEl = document.getElementById(statusId);
     const text = input.value.trim();
     if (!text) return;
 
-    const title = `${titlePrefix}: ${text.slice(0, 60)}`;
-    const url = `${REPO_ISSUES_URL}?labels=${encodeURIComponent(label)}&title=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`;
-    window.open(url, '_blank', 'noopener');
-    input.value = '';
+    if (typeof firebase === 'undefined' || !firebase.apps.length) {
+        if (statusEl) statusEl.textContent = 'Feedback is unavailable right now.';
+        return;
+    }
+
+    const currentUser = firebase.auth().currentUser;
+    if (statusEl) statusEl.textContent = 'Sending…';
+
+    firebase
+        .firestore()
+        .collection('feedback')
+        .add({
+            type,
+            text: text.slice(0, 1000),
+            uid: currentUser ? currentUser.uid : null,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        })
+        .then(() => {
+            input.value = '';
+            if (statusEl) statusEl.textContent = 'Thanks, sent!';
+        })
+        .catch((err) => {
+            console.error('Failed to submit feedback', err);
+            if (statusEl) statusEl.textContent = 'Could not send right now, try again later.';
+        });
 }
 
 document.getElementById('suggestionSubmit').addEventListener('click', () => {
-    submitFeedback('suggestionInput', 'enhancement', 'Suggestion');
+    submitFeedback('suggestionInput', 'suggestion', 'suggestionStatus');
 });
 
 document.getElementById('bugSubmit').addEventListener('click', () => {
-    submitFeedback('bugInput', 'bug', 'Bug');
+    submitFeedback('bugInput', 'bug', 'bugStatus');
 });

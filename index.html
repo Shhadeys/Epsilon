@@ -76,6 +76,7 @@
 		<button class="tab-btn" data-tab="settings">Settings</button>
 		<button class="tab-btn" data-tab="about">About</button>
       </nav>
+      <button type="button" id="chatGlobalNotif" class="chat-global-notif" style="display: none;" aria-label="New chat messages">New messages</button>
       <div class="tab-panel" id="tab-about" style="display: none;">
         <div class="setting-bg about-bg">
           <h4>About Epsilon</h4>
@@ -87,14 +88,14 @@
               </div>
               <div class="setting changelog-card">
                 <h5>Changelog</h5>
-                <p>Pulled live from <a href="https://github.com/Shhadeys/Epsilon/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG.md</a> on GitHub.</p>
+                <p>From <a href="https://github.com/Shhadeys/Epsilon/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">CHANGELOG.md</a>, baked into the site at commit time.</p>
                 <div id="changelogContent" class="changelog-content">Loading changelog&hellip;</div>
               </div>
             </div>
             <div class="about-side">
               <div class="setting">
                 <h5>About Me</h5>
-                <p id="aboutMeText">Fellow student developing with love. </p>
+                <p id="aboutMeText">Welcome all! I am a student here developing this for fun. If you know me, say hi!!</p>
               </div>
               <div class="setting">
                 <h5>Suggest a Game or Feature</h5>
@@ -103,6 +104,7 @@
                 <div class="button-row">
                   <button class="submit-button" id="suggestionSubmit">Submit Suggestion</button>
                 </div>
+                <p class="feedback-status" id="suggestionStatus"></p>
               </div>
               <div class="setting">
                 <h5>Report a Bug</h5>
@@ -111,6 +113,7 @@
                 <div class="button-row">
                   <button class="submit-button" id="bugSubmit">Submit Bug Report</button>
                 </div>
+                <p class="feedback-status" id="bugStatus"></p>
               </div>
             </div>
           </div>
@@ -199,7 +202,7 @@
       <div class="tab-panel" id="tab-chat">
         <div class="setting-bg chat-header">
           <h4>Chat</h4>
-          <h6>Sign in to chat. Public wall for everyone, plus private DMs and invite-only rooms &mdash; messages are saved and only visible to the people they're addressed to.</h6>
+          <h6>Sign in to chat. Public wall for everyone, plus private DMs and invite-only rooms. Messages are saved and only visible to the people they're addressed to.</h6>
           <div class="chat-status" id="chatStatus">Connecting&hellip;</div>
         </div>
 
@@ -211,13 +214,19 @@
             </div>
             <form id="chatLoginForm" class="chat-auth-form">
               <input type="text" id="loginUsername" class="text-field" placeholder="Username" autocomplete="username" maxlength="20" />
-              <input type="password" id="loginPassword" class="text-field" placeholder="Password" autocomplete="current-password" />
+              <div class="chat-password-row">
+                <input type="password" id="loginPassword" class="text-field" placeholder="Password" autocomplete="current-password" />
+                <button type="button" class="chat-password-toggle" data-target="loginPassword" aria-label="Show password">Show</button>
+              </div>
               <button type="submit" class="submit-button">Log In</button>
               <p class="chat-auth-error" id="loginError"></p>
             </form>
             <form id="chatSignupForm" class="chat-auth-form" style="display: none;">
               <input type="text" id="signupUsername" class="text-field" placeholder="Choose a username (3-20 chars)" autocomplete="username" maxlength="20" />
-              <input type="password" id="signupPassword" class="text-field" placeholder="Password (6+ chars)" autocomplete="new-password" />
+              <div class="chat-password-row">
+                <input type="password" id="signupPassword" class="text-field" placeholder="Password (6+ chars)" autocomplete="new-password" />
+                <button type="button" class="chat-password-toggle" data-target="signupPassword" aria-label="Show password">Show</button>
+              </div>
               <button type="submit" class="submit-button">Create Account</button>
               <p class="chat-auth-error" id="signupError"></p>
             </form>
@@ -230,10 +239,15 @@
               <span class="chat-my-name" id="chatMyName"></span>
               <button type="button" class="chat-logout-btn" id="chatLogoutBtn">Log Out</button>
             </div>
-            <div class="chat-subtabs">
-              <button type="button" class="chat-subtab-btn active" data-view="public">Public Wall</button>
-              <button type="button" class="chat-subtab-btn" data-view="dms">Direct Messages</button>
-              <button type="button" class="chat-subtab-btn" data-view="rooms">Rooms</button>
+            <label class="chat-notif-toggle">
+              <input type="checkbox" id="chatNotifToggle" checked />
+              Notifications
+            </label>
+            <button type="button" class="chat-subtab-btn chat-subtab-btn-primary active" data-view="public">Public Wall</button>
+
+            <div class="chat-subtabs-secondary">
+              <button type="button" class="chat-subtab-btn" data-view="dms">New DM</button>
+              <button type="button" class="chat-subtab-btn" data-view="rooms">Manage Rooms</button>
             </div>
 
             <div class="chat-view-panel" id="chatPanel-dms" style="display: none;">
@@ -242,7 +256,6 @@
                 <button type="submit" class="submit-button">Go</button>
               </form>
               <p class="chat-auth-error" id="chatDmSearchError"></p>
-              <div class="chat-list" id="chatDmList"></div>
             </div>
 
             <div class="chat-view-panel" id="chatPanel-rooms" style="display: none;">
@@ -256,6 +269,15 @@
               </form>
               <p class="chat-auth-error" id="chatRoomError"></p>
               <p class="chat-room-info" id="chatRoomInfo"></p>
+            </div>
+
+            <div class="chat-pinned-section">
+              <div class="chat-pinned-label">Direct Messages</div>
+              <div class="chat-list" id="chatDmList"></div>
+            </div>
+
+            <div class="chat-pinned-section">
+              <div class="chat-pinned-label">Rooms</div>
               <div class="chat-list" id="chatRoomList"></div>
             </div>
           </div>
@@ -476,6 +498,7 @@
     <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/index.min.js" defer></script>
     <script src="js/bg.js" defer></script>
     <script src="js/index.js" defer></script>
+    <script src="js/changelog-data.js" defer></script>
     <script src="js/about.js" defer></script>
     <script src="js/cryptojs.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
