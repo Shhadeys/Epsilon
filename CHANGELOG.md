@@ -9,6 +9,9 @@
 -  Chat finished (dms, rooms, much more secure, stored)
 -  Game suggestions and bug reports fixed
   
+8/31/26
+
+-  Bug in rooftop snipers, Idk issue but its like scaled on screen. Changing screen window size or full screening fixes it lol.
 
 ## Upcoming
 
