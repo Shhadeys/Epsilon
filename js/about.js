@@ -41,15 +41,21 @@ function renderChangelog(markdown) {
     return html || '<p>Changelog is empty.</p>';
 }
 
-// CHANGELOG_MARKDOWN comes from js/changelog-data.js, which is regenerated from
-// CHANGELOG.md by scripts/build-changelog.js (wired up as a pre-commit hook) --
-// baked in at commit time instead of fetched from GitHub on every page load.
-if (typeof window.CHANGELOG_MARKDOWN === 'string') {
-    document.getElementById('changelogContent').innerHTML = renderChangelog(window.CHANGELOG_MARKDOWN);
-} else {
-    document.getElementById('changelogContent').innerHTML =
-        '<p>Changelog data is missing. Run <code>node scripts/build-changelog.js</code> and reload.</p>';
-}
+// Fetched same-origin (not from GitHub's API), so it reflects CHANGELOG.md as
+// soon as it's deployed -- no build step, and it doesn't matter how the file
+// was edited (local commit, GitHub's web editor, etc).
+fetch('CHANGELOG.md', { cache: 'no-store' })
+    .then((res) => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.text();
+    })
+    .then((markdown) => {
+        document.getElementById('changelogContent').innerHTML = renderChangelog(markdown);
+    })
+    .catch((err) => {
+        console.error('Failed to load changelog', err);
+        document.getElementById('changelogContent').innerHTML = '<p>Could not load the changelog.</p>';
+    });
 
 /**
  * Submits a suggestion or bug report to Firestore instead of opening a GitHub issue.

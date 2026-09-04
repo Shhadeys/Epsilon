@@ -28,6 +28,7 @@ $('.tab-btn').on('click', function () {
 
 $('#gameButton').on('click', returnHome);
 $('#refresh').on('click', refreshPage);
+$('#fullscreenButton').on('click', toggleGameFullscreen);
 
 $('dialog').on('click', function (e) {
     if (!e.originalEvent.target.closest('div')) {
@@ -195,6 +196,53 @@ $('#sort').on('change', updateList);
 
 dragElement(document.getElementById('gameButton'));
 dragElement(document.getElementById('refresh'));
+dragElement(document.getElementById('fullscreenButton'));
+
+/**
+ * Cross-browser helpers around the Fullscreen API.
+ */
+function getFullscreenElement() {
+    return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+}
+
+function requestFullscreen(el) {
+    const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (fn) fn.call(el);
+}
+
+function exitFullscreen() {
+    const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if (fn) fn.call(document);
+}
+
+const maximizeIconPaths = ['M8 3H5a2 2 0 0 0-2 2v3', 'M21 8V5a2 2 0 0 0-2-2h-3', 'M3 16v3a2 2 0 0 0 2 2h3', 'M16 21h3a2 2 0 0 0 2-2v-3'];
+const minimizeIconPaths = ['M8 3v3a2 2 0 0 1-2 2H3', 'M21 8h-3a2 2 0 0 1-2-2V3', 'M3 16h3a2 2 0 0 1 2 2v3', 'M16 21v-3a2 2 0 0 1 2-2h3'];
+
+/**
+ * Toggles fullscreen on the game/proxy container (not just the iframe), so the
+ * home/refresh/fullscreen buttons stay usable while fullscreen.
+ *
+ * @return {void}
+ */
+function toggleGameFullscreen() {
+    const container = document.getElementById('page-loader');
+    if (getFullscreenElement()) {
+        exitFullscreen();
+    } else {
+        requestFullscreen(container);
+    }
+}
+
+function updateFullscreenIcon() {
+    const isFullscreen = getFullscreenElement() === document.getElementById('page-loader');
+    const paths = document.querySelectorAll('#fullscreenButton .ingame-icon path');
+    const set = isFullscreen ? minimizeIconPaths : maximizeIconPaths;
+    paths.forEach((p, i) => p.setAttribute('d', set[i]));
+}
+
+['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'].forEach((evt) => {
+    document.addEventListener(evt, updateFullscreenIcon);
+});
 
 /**
  * Scales a loaded game's canvas to fill the iframe (letterboxed, aspect ratio preserved),
@@ -441,11 +489,17 @@ function dragElement(elmnt) {
  * @return {void}
  */
 function returnHome() {
+    if (getFullscreenElement()) {
+        exitFullscreen();
+    }
     currentMenu.fadeOut(300, () => {
         $('#everything-else').fadeIn(200);
         $('#tab-games').fadeIn(200);
         $('.tab-btn').removeClass('active');
         $('.tab-btn[data-tab="games"]').addClass('active');
+        // unload the iframe entirely so the game actually stops running (audio, timers,
+        // Unity's canvas loop, etc) instead of just being hidden in the background
+        $('#page-loader iframe').attr('src', '');
     });
     currentMenu = $('#tab-games');
     inGame = !preferences.background;

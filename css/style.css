@@ -1618,6 +1618,29 @@ button.in-game-button[attr-snapped='true'] .ingame-icon {
     rotate: 180deg;
 }
 
+#fullscreenButton {
+    top: 121px;
+    right: 0;
+    left: auto;
+    border-radius: 999px 0 0 999px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: none;
+}
+
+#fullscreenButton:not(hover) {
+    transform: translateX(32px);
+}
+
+#fullscreenButton:hover {
+    transform: translateX(0px);
+}
+
+#fullscreenButton svg:not(.ingame-icon) {
+    margin-right: 0;
+    margin-left: 0.625rem;
+    rotate: 180deg;
+}
+
 #disabled {
     background: var(--button-color);
     filter: brightness(80%);
