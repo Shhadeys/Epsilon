@@ -492,6 +492,7 @@ function returnHome() {
     if (getFullscreenElement()) {
         exitFullscreen();
     }
+    if (window.GamePersistence) window.GamePersistence.snapshotNow();
     currentMenu.fadeOut(300, () => {
         $('#everything-else').fadeIn(200);
         $('#tab-games').fadeIn(200);
@@ -516,6 +517,7 @@ function toggleStar(event, star) {
  * @return {void}
  */
 function refreshPage() {
+    if (window.GamePersistence) window.GamePersistence.snapshotNow();
     const oldUrl = $('#page-loader iframe').attr('src');
     console.log(oldUrl);
     $('#page-loader iframe').attr('src', '');
